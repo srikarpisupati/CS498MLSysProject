@@ -50,7 +50,7 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
                     print(f"    Compile:     {compile_time:.2f} s")
                 print()
     
-    # Compare compilers (compare eager vs all others)
+    # Compare compilers (compare eager vs all others if available)
     print("="*70)
     eager_compiler = 'pytorch_eager'
     other_compilers = [c for c in compilers if c != eager_compiler]

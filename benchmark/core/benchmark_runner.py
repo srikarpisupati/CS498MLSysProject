@@ -53,27 +53,27 @@ class BenchmarkRunner:
         
         print(f"Measuring ({self.measured_iters} iterations)...")
         iter_latencies = []
-        mem_readings = []
         
         with torch.no_grad():
             for i in range(self.measured_iters):
-
                 t0 = time.time()
                 _ = compiled_model(example_input)
                 self.gpu_monitor.synchronize()
                 latency = time.time() - t0
                 iter_latencies.append(latency)
                 
-                mem_readings.append(self.gpu_monitor.get_current_memory())
-                
                 if (i + 1) % 25 == 0:
                     print(f"  Progress: {i+1}/{self.measured_iters}")
         
+        # get peak memory after all iterations (we reset before measurement)
+        peak_mem_bytes = self.gpu_monitor.get_peak_memory()
+        # avg memory is harder to track accurately without per-iteration sampling
+        # using peak as approximation (memory is usually stable during inference)
         calc_stats = MetricsCollector.compute_metrics(
             latencies=iter_latencies,
-            memory_readings=mem_readings,
+            memory_readings=[peak_mem_bytes],  # single value, both peak and avg will use it
             batch_size=batch_size,
-            compile_time=compile_time if compiler.get_name() != "pytorch_eager" else None
+            compile_time=compile_time if compiler.get_name() != "pytorch_eager" and compile_time > 0 else None
         )
         
         metrics = BenchmarkMetrics(

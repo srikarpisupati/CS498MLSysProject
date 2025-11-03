@@ -15,7 +15,7 @@ class TorchInductorCompiler(Compiler):
             device_props = torch.cuda.get_device_properties(0)
             compute_capability = device_props.major * 10 + device_props.minor
             return compute_capability >= 70  # 7.0
-        except:
+        except (RuntimeError, AttributeError):
             return False
     
     def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:
