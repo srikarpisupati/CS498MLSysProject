@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-"""quick dump of results, not fancy"""
 import csv
 import sys
 import os

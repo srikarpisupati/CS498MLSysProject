@@ -1,8 +1,7 @@
 import torch
 
 class GPUMonitor:
-    # tiny helper so runner stays clean
-    
+
     def __init__(self, device):
         self.device = device
         
@@ -26,7 +25,7 @@ class GPUMonitor:
 
 
 def get_device():
-    # pick gpu if we can, otherwise cpu. nothing fancy
+
     if torch.cuda.is_available():
         device = torch.device('cuda')
         print(f"Using GPU: {torch.cuda.get_device_name(0)}")

@@ -3,7 +3,6 @@ import torch.nn as nn
 from .base import Compiler
 
 class TorchScriptCompiler(Compiler):
-    # uses torch.jit to get a static-ish graph
     def __init__(self, method="trace"):
         self.method = method
     
@@ -33,6 +32,5 @@ class TorchScriptCompiler(Compiler):
         return f"torchscript_{self.method}"
     
     def supports_dynamic_shapes(self) -> bool:
-        # dynamic shapes are finicky here; not relying on them
         return False
 

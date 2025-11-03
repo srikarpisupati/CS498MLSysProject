@@ -5,7 +5,7 @@ from .base import Compiler
 class TorchInductorCompiler(Compiler):
     def __init__(self, mode="default"):
         self.mode = mode
-        # triton only works on newer gpus; we check once here
+        # triton only works on newer gpu
         self._supports_triton = self._check_triton_support()
     
     def _check_triton_support(self) -> bool:
@@ -20,7 +20,6 @@ class TorchInductorCompiler(Compiler):
     
     def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:
         if not self._supports_triton:
-            # fallback path for older cards (e.g., p100)
             import warnings
             warnings.warn(
                 f"Device does not support Triton compiler (CUDA capability < 7.0). "

@@ -22,7 +22,7 @@ class BenchmarkRunner:
         memory over several iterations. Returns a small dataclass with the
         aggregated stats so callers can save/compare.
         """
-        # quick banner so we can see what's going on
+
         print(f"\n{'='*60}")
         print(f"Benchmarking: {model_wrapper.get_name()} | {compiler.get_name()} | batch_size={batch_size}")
         print(f"{'='*60}")
@@ -44,7 +44,6 @@ class BenchmarkRunner:
         self.gpu_monitor.reset_peak_memory()
         
         print(f"Warming up ({self.warmup_iters} iterations)...")
-        # warmup to avoid measuring cold start jit/caches etc (kinda basic but fine)
         with torch.no_grad():
             for _ in range(self.warmup_iters):
                 _ = compiled_model(example_input)
@@ -65,7 +64,6 @@ class BenchmarkRunner:
                 latency = time.time() - t0
                 iter_latencies.append(latency)
                 
-                # this is simple allocated bytes, good enough for our comparison
                 mem_readings.append(self.gpu_monitor.get_current_memory())
                 
                 if (i + 1) % 25 == 0:

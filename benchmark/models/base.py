@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 
 class ModelWrapper(ABC):
-    # just a thin wrapper interface so runner can be generic
-    
     @abstractmethod
     def get_model(self) -> nn.Module:
         pass

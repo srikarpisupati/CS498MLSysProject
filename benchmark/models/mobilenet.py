@@ -4,8 +4,7 @@ from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
 from .base import ModelWrapper
 
 class MobileNetWrapper(ModelWrapper):
-    # wrapper so we can swap models without touching the runner
-    
+
     def __init__(self, input_shape=(3, 224, 224), pretrained=True):
         self.input_shape = input_shape
         if pretrained:

@@ -5,7 +5,6 @@ from typing import List
 
 @dataclass
 class BenchmarkMetrics:
-    # tiny container for numbers we care about
     compiler_name: str
     model_name: str
     batch_size: int
@@ -47,7 +46,6 @@ class MetricsCollector:
         plus the batch size used. We compute latency stats in ms, throughput in
         samples/sec, and memory in MB. compile_time is optional and just passed along.
         """
-        # convert to ms/MB here so callers don't do unit math everywhere
         latencies_ms = np.array(latencies) * 1000
         memory_mb = np.array(memory_readings) / (1024 ** 2)
         

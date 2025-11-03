@@ -7,7 +7,6 @@ class ResultsWriter:
     
     @staticmethod
     def write_csv(results: List[BenchmarkMetrics], output_path: str):
-        # just dump whatever we got, no fancy formatting
         output_dir = os.path.dirname(output_path)
         if output_dir:
             os.makedirs(output_dir, exist_ok=True)
