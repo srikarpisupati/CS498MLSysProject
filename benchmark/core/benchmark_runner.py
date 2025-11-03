@@ -16,17 +16,13 @@ class BenchmarkRunner:
         self.gpu_monitor = GPUMonitor(device)
     
     def run_benchmark(self, model_wrapper: ModelWrapper, compiler: Compiler, batch_size: int) -> BenchmarkMetrics:
+        """Run a full benchmark pass for one model+compiler+batch.
+
+        Does a compile step, a short warmup, and then measures latency and
+        memory over several iterations. Returns a small dataclass with the
+        aggregated stats so callers can save/compare.
         """
-        Run benchmark for a specific model, compiler, and batch size
-        
-        Args:
-            model_wrapper: Model to benchmark
-            compiler: Compiler to use
-            batch_size: Batch size for inference
-            
-        Returns:
-            BenchmarkMetrics object with results
-        """
+        # quick banner so we can see what's going on
         print(f"\n{'='*60}")
         print(f"Benchmarking: {model_wrapper.get_name()} | {compiler.get_name()} | batch_size={batch_size}")
         print(f"{'='*60}")
@@ -35,19 +31,20 @@ class BenchmarkRunner:
         example_input = model_wrapper.get_example_input(batch_size, self.device)
         
         print("Compiling model...")
-        compile_start = time.time()
+        compile_start_time = time.time()
         compiled_model = compiler.compile(model, example_input)
         
         with torch.no_grad():
             _ = compiled_model(example_input)
             self.gpu_monitor.synchronize()
         
-        compile_time = time.time() - compile_start
+        compile_time = time.time() - compile_start_time
         print(f"Compilation time: {compile_time:.3f}s")
         
         self.gpu_monitor.reset_peak_memory()
         
         print(f"Warming up ({self.warmup_iters} iterations)...")
+        # warmup to avoid measuring cold start jit/caches etc (kinda basic but fine)
         with torch.no_grad():
             for _ in range(self.warmup_iters):
                 _ = compiled_model(example_input)
@@ -56,27 +53,27 @@ class BenchmarkRunner:
         self.gpu_monitor.reset_peak_memory()
         
         print(f"Measuring ({self.measured_iters} iterations)...")
-        latencies = []
-        memory_readings = []
+        iter_latencies = []
+        mem_readings = []
         
         with torch.no_grad():
             for i in range(self.measured_iters):
 
-                start_time = time.time()
+                t0 = time.time()
                 _ = compiled_model(example_input)
                 self.gpu_monitor.synchronize()
-                latency = time.time() - start_time
-                latencies.append(latency)
+                latency = time.time() - t0
+                iter_latencies.append(latency)
                 
-
-                memory_readings.append(self.gpu_monitor.get_current_memory())
+                # this is simple allocated bytes, good enough for our comparison
+                mem_readings.append(self.gpu_monitor.get_current_memory())
                 
                 if (i + 1) % 25 == 0:
                     print(f"  Progress: {i+1}/{self.measured_iters}")
         
-        metrics_dict = MetricsCollector.compute_metrics(
-            latencies=latencies,
-            memory_readings=memory_readings,
+        calc_stats = MetricsCollector.compute_metrics(
+            latencies=iter_latencies,
+            memory_readings=mem_readings,
             batch_size=batch_size,
             compile_time=compile_time if compiler.get_name() != "pytorch_eager" else None
         )
@@ -85,7 +82,7 @@ class BenchmarkRunner:
             compiler_name=compiler.get_name(),
             model_name=model_wrapper.get_name(),
             batch_size=batch_size,
-            **metrics_dict
+            **calc_stats
         )
         
         print(f"\nResults:")

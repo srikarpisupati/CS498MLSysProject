@@ -10,7 +10,6 @@ from benchmark.utils.device import get_device
 from benchmark.utils.output import ResultsWriter
 
 def get_compiler(compiler_name: str):
-    """Factory function to create compiler instances"""
     if compiler_name == "pytorch_eager":
         return PyTorchEagerCompiler()
     elif compiler_name == "torch_inductor":
@@ -23,7 +22,6 @@ def get_compiler(compiler_name: str):
         raise ValueError(f"Unknown compiler: {compiler_name}. Available: pytorch_eager, torch_inductor, torchscript")
 
 def get_model(model_name: str, input_shape):
-    """Factory function to create model instances"""
     if model_name == "resnet50":
         return ResNetWrapper(input_shape=tuple(input_shape), pretrained=True)
     elif model_name == "mobilenet_v3":
@@ -32,39 +30,45 @@ def get_model(model_name: str, input_shape):
         raise ValueError(f"Unknown model: {model_name}. Available: resnet50, mobilenet_v3")
 
 def main():
-    config = Config.from_yaml("config.yaml")
+    """Entry point that loads config, runs all requested cases, and saves CSV.
+
+    Reads `config.yaml`, builds the model wrapper, iterates over compilers and
+    batch sizes, and writes a single results file under the configured output
+    directory. Nothing fancy, just orchestration.
+    """
+    cfg = Config.from_yaml("config.yaml")
     
     print("="*70)
     print("ML COMPILER BENCHMARK FRAMEWORK")
     print("="*70)
-    print(f"Model: {config.model.name}")
-    print(f"Compilers: {', '.join(config.compilers)}")
-    print(f"Batch sizes: {config.model.batch_sizes}")
-    print(f"Warmup iterations: {config.benchmark.warmup_iterations}")
-    print(f"Measured iterations: {config.benchmark.measured_iterations}")
+    print(f"Model: {cfg.model.name}")
+    print(f"Compilers: {', '.join(cfg.compilers)}")
+    print(f"Batch sizes: {cfg.model.batch_sizes}")
+    print(f"Warmup iterations: {cfg.benchmark.warmup_iterations}")
+    print(f"Measured iterations: {cfg.benchmark.measured_iterations}")
     print("="*70)
     
     device = get_device()
     
     runner = BenchmarkRunner(
         device=device,
-        warmup_iters=config.benchmark.warmup_iterations,
-        measured_iters=config.benchmark.measured_iterations
+        warmup_iters=cfg.benchmark.warmup_iterations,
+        measured_iters=cfg.benchmark.measured_iterations
     )
     
-    model_wrapper = get_model(config.model.name, config.model.input_shape)
+    model_wrapper = get_model(cfg.model.name, cfg.model.input_shape)
     
-    all_results = []
+    combined_results = []
     
-    for compiler_name in config.compilers:
+    for compiler_name in cfg.compilers:
         compiler = get_compiler(compiler_name)
         
-        for batch_size in config.model.batch_sizes:
-            metrics = runner.run_benchmark(model_wrapper, compiler, batch_size)
-            all_results.append(metrics)
+        for batch_size in cfg.model.batch_sizes:
+            run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
+            combined_results.append(run_stats)
     
-    output_path = f"{config.output.save_path}/benchmark_results.csv"
-    ResultsWriter.write_csv(all_results, output_path)
+    output_path = f"{cfg.output.save_path}/benchmark_results.csv"
+    ResultsWriter.write_csv(combined_results, output_path)
     
     print("\n" + "="*70)
     print("BENCHMARK COMPLETE!")

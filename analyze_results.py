@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
-"""
-Quick analysis script for benchmark results
-"""
+"""quick dump of results, not fancy"""
 import csv
 import sys
 import os
 
 def analyze_results(csv_path="results/benchmark_results.csv"):
+    """Read a CSV of runs and print a small summary + comparison.
+
+    Assumes the CSV was produced by this repo (matching headers). This is just
+    a quick console view to eyeball differences; for real analysis you'd pull
+    it into a notebook.
+    """
     if not os.path.exists(csv_path):
         print(f"Error: Results file not found at {csv_path}")
         return
     
-    results = {}
+    by_case = {}
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
             compiler = row['compiler']
             batch_size = int(row['batch_size'])
             key = (compiler, batch_size)
-            results[key] = {
+            by_case[key] = {
                 'latency_mean_ms': float(row['latency_mean_ms']),
                 'throughput_samples_per_sec': float(row['throughput_samples_per_sec']),
                 'compile_time_sec': row.get('compile_time_sec', 'N/A')
@@ -35,13 +39,13 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
         print("-" * 70)
         for batch_size in [1, 32]:
             key = (compiler, batch_size)
-            if key in results:
-                r = results[key]
+            if key in by_case:
+                stat_row = by_case[key]
                 print(f"  Batch Size {batch_size}:")
-                print(f"    Latency:     {r['latency_mean_ms']:.2f} ms")
-                print(f"    Throughput:  {r['throughput_samples_per_sec']:.2f} samples/sec")
-                if r['compile_time_sec'] != 'N/A':
-                    print(f"    Compile:     {r['compile_time_sec']} s")
+                print(f"    Latency:     {stat_row['latency_mean_ms']:.2f} ms")
+                print(f"    Throughput:  {stat_row['throughput_samples_per_sec']:.2f} samples/sec")
+                if stat_row['compile_time_sec'] != 'N/A':
+                    print(f"    Compile:     {stat_row['compile_time_sec']} s")
                 print()
     
     # Compare compilers
@@ -54,9 +58,9 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
         eager_key = ('pytorch_eager', batch_size)
         inductor_key = ('torch_inductor_default', batch_size)
         
-        if eager_key in results and inductor_key in results:
-            eager = results[eager_key]
-            inductor = results[inductor_key]
+        if eager_key in by_case and inductor_key in by_case:
+            eager = by_case[eager_key]
+            inductor = by_case[inductor_key]
             
             latency_speedup = eager['latency_mean_ms'] / inductor['latency_mean_ms']
             throughput_speedup = inductor['throughput_samples_per_sec'] / eager['throughput_samples_per_sec']

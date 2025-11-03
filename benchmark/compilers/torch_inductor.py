@@ -5,11 +5,10 @@ from .base import Compiler
 class TorchInductorCompiler(Compiler):
     def __init__(self, mode="default"):
         self.mode = mode
-        # Check if device supports Triton (CUDA capability >= 7.0)
+        # triton only works on newer gpus; we check once here
         self._supports_triton = self._check_triton_support()
     
     def _check_triton_support(self) -> bool:
-        """Check if the current device supports Triton compiler"""
         if not torch.cuda.is_available():
             return False
         try:
@@ -21,15 +20,13 @@ class TorchInductorCompiler(Compiler):
     
     def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:
         if not self._supports_triton:
-            # Fall back to eager mode for devices that don't support Triton
-            # (e.g., P100 with compute capability 6.0)
+            # fallback path for older cards (e.g., p100)
             import warnings
             warnings.warn(
                 f"Device does not support Triton compiler (CUDA capability < 7.0). "
                 f"Falling back to eager mode for torch.compile.",
                 UserWarning
             )
-            # Return model as-is (eager mode)
             return model
         
         compiled_model = torch.compile(model, mode=self.mode)
