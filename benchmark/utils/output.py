@@ -7,7 +7,10 @@ class ResultsWriter:
     
     @staticmethod
     def write_csv(results: List[BenchmarkMetrics], output_path: str):
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
         
         if not results:
             print("No results to write!")

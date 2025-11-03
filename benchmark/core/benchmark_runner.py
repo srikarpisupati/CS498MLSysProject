@@ -96,6 +96,7 @@ class BenchmarkRunner:
         print(f"  Avg Memory: {metrics.avg_memory_mb:.2f} MB")
         
         del model, compiled_model, example_input
-        torch.cuda.empty_cache()
+        if self.device.type == 'cuda':
+            torch.cuda.empty_cache()
         
         return metrics
