@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
-results/
 .DS_Store
 
 # Miniconda/Conda
