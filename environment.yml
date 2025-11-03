@@ -21,4 +21,4 @@ dependencies:
   # Pip dependencies (if any)
   - pip
   - pip:
-    - transformers  # For future BERT/GPT-2
+    - transformers==4.35.0  # Compatible with PyTorch 2.1.0

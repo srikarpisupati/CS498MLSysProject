@@ -2,3 +2,15 @@ __pycache__/
 *.pyc
 results/
 .DS_Store
+
+# Miniconda/Conda
+Miniconda3-*.sh
+Miniconda3-*.sh.*
+miniconda3/
+anaconda3/
+conda-meta/
+*.conda
+
+# Conda environment files (keep environment.yml, but ignore local envs)
+.conda/
+envs/
