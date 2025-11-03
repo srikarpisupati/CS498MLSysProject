@@ -31,11 +31,14 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
     print("="*70)
     print()
     
-    # Show results by compiler
-    for compiler in ['pytorch_eager', 'torch_inductor_default']:
+    # Show results by compiler (auto-detect all compilers)
+    compilers = sorted(set(c for c, _ in by_case.keys()))
+    batch_sizes = sorted(set(b for _, b in by_case.keys()))
+    
+    for compiler in compilers:
         print(f"Compiler: {compiler}")
         print("-" * 70)
-        for batch_size in [1, 32]:
+        for batch_size in batch_sizes:
             key = (compiler, batch_size)
             if key in by_case:
                 stat_row = by_case[key]
@@ -43,46 +46,45 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
                 print(f"    Latency:     {stat_row['latency_mean_ms']:.2f} ms")
                 print(f"    Throughput:  {stat_row['throughput_samples_per_sec']:.2f} samples/sec")
                 if stat_row['compile_time_sec'] != 'N/A':
-                    print(f"    Compile:     {stat_row['compile_time_sec']} s")
+                    compile_time = float(stat_row['compile_time_sec'])
+                    print(f"    Compile:     {compile_time:.2f} s")
                 print()
     
-    # Compare compilers
+    # Compare compilers (compare eager vs all others)
     print("="*70)
-    print("COMPARISON: PyTorch Eager vs Torch Inductor")
-    print("="*70)
-    print()
+    eager_compiler = 'pytorch_eager'
+    other_compilers = [c for c in compilers if c != eager_compiler]
     
-    for batch_size in [1, 32]:
-        eager_key = ('pytorch_eager', batch_size)
-        inductor_key = ('torch_inductor_default', batch_size)
+    if eager_compiler in compilers and other_compilers:
+        print(f"COMPARISON: {eager_compiler} vs Other Compilers")
+        print("="*70)
+        print()
         
-        if eager_key in by_case and inductor_key in by_case:
-            eager = by_case[eager_key]
-            inductor = by_case[inductor_key]
-            
-            latency_speedup = eager['latency_mean_ms'] / inductor['latency_mean_ms']
-            throughput_speedup = inductor['throughput_samples_per_sec'] / eager['throughput_samples_per_sec']
-            
-            print(f"Batch Size {batch_size}:")
-            print(f"  Latency:    {eager['latency_mean_ms']:.2f} ms → {inductor['latency_mean_ms']:.2f} ms")
-            print(f"  Speedup:    {latency_speedup:.2f}x faster ({((latency_speedup-1)*100):.1f}% improvement)")
-            print(f"  Throughput: {eager['throughput_samples_per_sec']:.2f} → {inductor['throughput_samples_per_sec']:.2f} samples/sec")
-            print(f"  Improvement: {throughput_speedup:.2f}x ({((throughput_speedup-1)*100):.1f}% increase)")
-            
-            if inductor['compile_time_sec'] != 'N/A':
-                compile_time = float(inductor['compile_time_sec'])
-                print(f"  Compile Cost: {compile_time:.2f} s (one-time, amortized over runs)")
-            print()
+        for other_compiler in other_compilers:
+            for batch_size in batch_sizes:
+                eager_key = (eager_compiler, batch_size)
+                other_key = (other_compiler, batch_size)
+                
+                if eager_key in by_case and other_key in by_case:
+                    eager = by_case[eager_key]
+                    other = by_case[other_key]
+                    
+                    latency_speedup = eager['latency_mean_ms'] / other['latency_mean_ms']
+                    throughput_speedup = other['throughput_samples_per_sec'] / eager['throughput_samples_per_sec']
+                    
+                    print(f"{eager_compiler} vs {other_compiler} (Batch {batch_size}):")
+                    print(f"  Latency:    {eager['latency_mean_ms']:.2f} ms → {other['latency_mean_ms']:.2f} ms")
+                    print(f"  Speedup:    {latency_speedup:.2f}x faster ({((latency_speedup-1)*100):.1f}% improvement)")
+                    print(f"  Throughput: {eager['throughput_samples_per_sec']:.2f} → {other['throughput_samples_per_sec']:.2f} samples/sec")
+                    print(f"  Improvement: {throughput_speedup:.2f}x ({((throughput_speedup-1)*100):.1f}% increase)")
+                    
+                    if other['compile_time_sec'] != 'N/A':
+                        compile_time = float(other['compile_time_sec'])
+                        print(f"  Compile Cost: {compile_time:.2f} s (one-time, amortized over runs)")
+                    print()
     
     print("="*70)
-    print("KEY INSIGHTS:")
-    print("="*70)
-    print("1. ✓ Torch Inductor provides significant speedup, especially at larger batch sizes")
-    print("2. ✓ Batch size 32 shows ~2x improvement in both latency and throughput")
-    print("3. ✓ Compilation overhead is acceptable if running many inference calls")
-    print("4. ⚠ Results are from CPU execution - GPU would show even larger improvements")
-    print("5. ⚠ Memory metrics showing 0.00 MB (likely CPU + tracking issue)")
-    print("="*70)
+
 
 if __name__ == "__main__":
     csv_path = sys.argv[1] if len(sys.argv) > 1 else "results/benchmark_results.csv"
