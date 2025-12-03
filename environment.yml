@@ -13,6 +13,8 @@ dependencies:
   - pytorch::pytorch=2.1.0
   - pytorch::torchvision=0.16.0
   - pytorch::pytorch-cuda=11.8
+  - nvidia::cuda-toolkit=11.8.0
+  - nvidia::cuda-nvcc=11.8.89
   
   # Core dependencies
   - numpy=1.24.3
@@ -22,4 +24,4 @@ dependencies:
   - pip
   - pip:
     - transformers==4.35.0  # Compatible with PyTorch 2.1.0
-    - tlcpack-nightly-cu118==0.15.dev0  # TVM prebuilt wheel for CUDA 11.8
+    - onnxruntime-gpu==1.15.1  # CUDA 11.8-compatible ONNX Runtime build

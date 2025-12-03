@@ -78,12 +78,32 @@ echo "Creating conda environment from environment.yml..."
 echo "This may take several minutes as it downloads large packages (PyTorch, CUDA, etc.)..."
 "$CONDA_BIN" env create -f environment.yml
 
+# Install bundled TVM wheel (needed for CUDA compilation) if present
+TVM_WHEEL="$PROJECT_DIR/tlcpack_cu116-0.11.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+if [ -f "$TVM_WHEEL" ]; then
+    echo ""
+    echo "Installing TVM (TLCPack) wheel..."
+    "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/pip" install "$TVM_WHEEL"
+else
+    echo ""
+    echo "⚠ TVM wheel not found at $TVM_WHEEL"
+    echo "  Download a CUDA-enabled TLCPack wheel and place it in the project root before running setup."
+fi
+
 # Verify environment was created
 if conda env list | grep -q "^$ENV_NAME "; then
     # Check for GPU availability
     echo ""
     echo "Checking GPU availability..."
     "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/python" "$PROJECT_DIR/check_gpu.py" 2>/dev/null || echo "  (Skipping GPU check - run check_gpu.py manually)"
+
+    echo ""
+    echo "Checking NVCC..."
+    if "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/nvcc" --version >/dev/null 2>&1; then
+        "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/nvcc" --version | head -n 1
+    else
+        echo "  ⚠ nvcc not found. Ensure cuda-toolkit installed correctly."
+    fi
     
     echo ""
     echo "======================================================================"

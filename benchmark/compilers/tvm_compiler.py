@@ -1,3 +1,4 @@
+import shutil
 import warnings
 
 import torch
@@ -17,17 +18,18 @@ class TVMCompiler(Compiler):
             from tvm.contrib import graph_executor
         except ImportError as exc:
             raise RuntimeError(
-                "TVM is not installed. Install a prebuilt wheel such as "
-                "'tlcpack-nightly-cu118' (CUDA 11.8) or refer to "
-                "https://tvm.apache.org/docs/install/index.html"
+                "TVM is not installed. Install the bundled "
+                "'tlcpack_cu116-0.11.1-*.whl' (in the repo root) or download a CUDA-enabled "
+                "TLCPack release per https://tvm.apache.org/docs/install/index.html"
             ) from exc
 
         self._tvm = tvm
         self._relay = relay
         self._graph_executor = graph_executor
-        self._tvm_cuda_enabled = bool(
-            tvm.runtime.enabled("cuda")
-        ) and bool(tvm.get_global_func("tvm.codegen.cuda", allow_missing=True))
+        self._tvm_cuda_enabled = bool(tvm.runtime.enabled("cuda")) and bool(
+            tvm.get_global_func("target.build.cuda", allow_missing=True)
+        )
+        self._nvcc_available = shutil.which("nvcc") is not None
 
         default_target = "cuda" if torch.cuda.is_available() and self._tvm_cuda_enabled else "llvm"
         requested_target = target or default_target
@@ -89,7 +91,15 @@ class TVMCompiler(Compiler):
             if not self._tvm_cuda_enabled:
                 warnings.warn(
                     "TVM was installed without CUDA codegen support. Falling back to 'llvm'. "
-                    "Reinstall TVM with CUDA (e.g., tlcpack-nightly-cu118) to target GPUs.",
+                    "Reinstall TVM with the CUDA-enabled TLCPack wheel to target GPUs.",
+                    RuntimeWarning,
+                )
+                return "llvm", self._tvm.target.Target("llvm")
+
+            if not self._nvcc_available:
+                warnings.warn(
+                    "NVCC compiler not found in PATH. Falling back to 'llvm'. "
+                    "Install CUDA toolkit to enable GPU builds.",
                     RuntimeWarning,
                 )
                 return "llvm", self._tvm.target.Target("llvm")
