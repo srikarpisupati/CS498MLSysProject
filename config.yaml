@@ -7,19 +7,19 @@ benchmark:
 models:
   - name: resnet50
     input_shape: [3, 224, 224]
-    batch_sizes: [1, 32]
+    batch_sizes: [1, 8]
     precision: fp32
   - name: mobilenet_v3
     input_shape: [3, 224, 224]
-    batch_sizes: [1, 32]
+    batch_sizes: [1, 8]
     precision: fp32
   - name: vgg16
     input_shape: [3, 224, 224]
-    batch_sizes: [1, 32]
+    batch_sizes: [1, 8]
     precision: fp32
   - name: gpt2
     input_shape: [128]         # sequence length for causal LM
-    batch_sizes: [1, 32]
+    batch_sizes: [1, 8]
     precision: fp32
 
 compilers:

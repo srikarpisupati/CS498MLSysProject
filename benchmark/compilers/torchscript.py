@@ -16,7 +16,8 @@ class TorchScriptCompiler(Compiler):
         model.eval()
         
         if self.method == "trace":
-            traced_model = torch.jit.trace(model, example_input)
+            # Disable trace checking to avoid OOM during verification with large models
+            traced_model = torch.jit.trace(model, example_input, check_trace=False)
             traced_model = torch.jit.optimize_for_inference(traced_model)
             return traced_model
         

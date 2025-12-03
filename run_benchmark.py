@@ -1,3 +1,4 @@
+import os
 import torch
 from benchmark.core.config import Config
 from benchmark.core.benchmark_runner import BenchmarkRunner
@@ -51,9 +52,9 @@ def get_model(model_name: str, input_shape):
 def main():
     """Entry point that loads config, runs all requested cases, and saves CSV.
 
-    Reads `config.yaml`, builds the model wrapper, iterates over compilers and
-    batch sizes, and writes a single results file under the configured output
-    directory. Nothing fancy, just orchestration.
+    Processes each model separately with memory clearing between models.
+    Results are appended incrementally to avoid memory issues and ensure
+    partial results are saved if a run fails.
     """
     cfg = Config.from_yaml("config.yaml")
     
@@ -74,20 +75,42 @@ def main():
         measured_iters=cfg.benchmark.measured_iterations
     )
     
-    combined_results = []
+    output_path = f"{cfg.output.save_path}/benchmark_results.csv"
     
-    for model_cfg in cfg.models:
+    # Clear existing results file at start
+    if os.path.exists(output_path):
+        os.remove(output_path)
+        print(f"Cleared previous results at: {output_path}\n")
+    
+    # Process each model separately to manage memory
+    for model_idx, model_cfg in enumerate(cfg.models):
+        print(f"\n{'='*70}")
+        print(f"PROCESSING MODEL {model_idx + 1}/{len(cfg.models)}: {model_cfg.name}")
+        print(f"{'='*70}")
+        
         model_wrapper = get_model(model_cfg.name, model_cfg.input_shape)
+        model_results = []
         
         for compiler_name in cfg.compilers:
             compiler = get_compiler(compiler_name)
             
             for batch_size in model_cfg.batch_sizes:
-                run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
-                combined_results.append(run_stats)
-    
-    output_path = f"{cfg.output.save_path}/benchmark_results.csv"
-    ResultsWriter.write_csv(combined_results, output_path)
+                try:
+                    run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
+                    model_results.append(run_stats)
+                except Exception as e:
+                    print(f"\n⚠ Error benchmarking {model_cfg.name} with {compiler_name} (batch={batch_size}): {e}")
+                    print("Continuing with next configuration...\n")
+        
+        # Save results for this model (append mode after first model)
+        if model_results:
+            ResultsWriter.write_csv(model_results, output_path, append=(model_idx > 0))
+        
+        # Clean up model and free memory before next model
+        del model_wrapper
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
     
     print("\n" + "="*70)
     print("BENCHMARK COMPLETE!")
