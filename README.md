@@ -52,10 +52,11 @@ python analyze_results.py
 
 ## Configuration
 
-Edit `config.yaml` to change:
-- Model: `resnet50`
-- Compilers: `pytorch_eager`, `torchscript`, `onnxruntime`, `tvm`
-- Batch sizes: `[1, 32]`
+`config.yaml` controls everything:
+- `models`: list of model entries (name, input shape, batch sizes, precision). Add/remove entries to run multiple architectures in one go (e.g., `resnet50`, `mobilenet_v3`).
+- `compilers`: list of compiler keys (`pytorch_eager`, `torchscript`, `onnxruntime`, `tvm`, etc.).
+- `benchmark`: warmup/measured iterations.
+- `output`: result format/path.
 
 ## TVM Support
 

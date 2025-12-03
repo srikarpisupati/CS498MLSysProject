@@ -22,7 +22,7 @@ class OutputConfig:
 @dataclass
 class Config:
     benchmark: BenchmarkConfig
-    model: ModelConfig
+    models: List[ModelConfig]
     compilers: List[str]
     output: OutputConfig
     
@@ -31,9 +31,18 @@ class Config:
         with open(path, 'r') as f:
             data = yaml.safe_load(f)
         
+        if 'models' in data:
+            model_entries = data['models']
+        elif 'model' in data:
+            model_entries = [data['model']]
+        else:
+            raise ValueError("Config must specify either 'model' or 'models'.")
+        
+        model_configs = [ModelConfig(**entry) for entry in model_entries]
+        
         return cls(
             benchmark=BenchmarkConfig(**data['benchmark']),
-            model=ModelConfig(**data['model']),
+            models=model_configs,
             compilers=data['compilers'],
             output=OutputConfig(**data['output'])
         )

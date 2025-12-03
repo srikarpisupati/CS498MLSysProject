@@ -50,9 +50,8 @@ def main():
     print("="*70)
     print("ML COMPILER BENCHMARK FRAMEWORK")
     print("="*70)
-    print(f"Model: {cfg.model.name}")
+    print(f"Models: {', '.join(model_cfg.name for model_cfg in cfg.models)}")
     print(f"Compilers: {', '.join(cfg.compilers)}")
-    print(f"Batch sizes: {cfg.model.batch_sizes}")
     print(f"Warmup iterations: {cfg.benchmark.warmup_iterations}")
     print(f"Measured iterations: {cfg.benchmark.measured_iterations}")
     print("="*70)
@@ -65,16 +64,17 @@ def main():
         measured_iters=cfg.benchmark.measured_iterations
     )
     
-    model_wrapper = get_model(cfg.model.name, cfg.model.input_shape)
-    
     combined_results = []
     
-    for compiler_name in cfg.compilers:
-        compiler = get_compiler(compiler_name)
+    for model_cfg in cfg.models:
+        model_wrapper = get_model(model_cfg.name, model_cfg.input_shape)
         
-        for batch_size in cfg.model.batch_sizes:
-            run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
-            combined_results.append(run_stats)
+        for compiler_name in cfg.compilers:
+            compiler = get_compiler(compiler_name)
+            
+            for batch_size in model_cfg.batch_sizes:
+                run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
+                combined_results.append(run_stats)
     
     output_path = f"{cfg.output.save_path}/benchmark_results.csv"
     ResultsWriter.write_csv(combined_results, output_path)
