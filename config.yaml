@@ -5,19 +5,27 @@ benchmark:
   measured_iterations: 100   # Iterations to measure and report
 
 models:
-  # - name: resnet50
-  #   input_shape: [3, 224, 224]
-  #   batch_sizes: [1, 32]
-  #   precision: fp32
+  - name: resnet50
+    input_shape: [3, 224, 224]
+    batch_sizes: [1, 32]
+    precision: fp32
   - name: mobilenet_v3
     input_shape: [3, 224, 224]
     batch_sizes: [1, 32]
     precision: fp32
+  - name: bert_base_uncased
+    input_shape: [128]         # sequence length
+    batch_sizes: [1, 32]
+    precision: fp32
+  - name: gpt2
+    input_shape: [128]         # sequence length for causal LM
+    batch_sizes: [1, 32]
+    precision: fp32
 
 compilers:
-  # - pytorch_eager      # Baseline (no compilation)
-  # - torchscript        # TorchScript JIT compiler
-  # - onnxruntime        # ONNX Runtime (CUDA EP)
+  - pytorch_eager      # Baseline (no compilation)
+  - torchscript        # TorchScript JIT compiler
+  - onnxruntime        # ONNX Runtime (CUDA EP)
   - tvm                # TVM Relay / graph executor (needs TVM installed)
 
 output:

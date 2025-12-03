@@ -53,7 +53,7 @@ python analyze_results.py
 ## Configuration
 
 `config.yaml` controls everything:
-- `models`: list of model entries (name, input shape, batch sizes, precision). Add/remove entries to run multiple architectures in one go (e.g., `resnet50`, `mobilenet_v3`).
+- `models`: list of model entries (name, input shape, batch sizes, precision). Add/remove entries to run multiple architectures in one go (e.g., `resnet50`, `mobilenet_v3`, `bert_base_uncased`, `gpt2`—language models use `input_shape: [sequence_length]`).
 - `compilers`: list of compiler keys (`pytorch_eager`, `torchscript`, `onnxruntime`, `tvm`, etc.).
 - `benchmark`: warmup/measured iterations.
 - `output`: result format/path.
