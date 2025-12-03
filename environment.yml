@@ -22,3 +22,4 @@ dependencies:
   - pip
   - pip:
     - transformers==4.35.0  # Compatible with PyTorch 2.1.0
+    - tlcpack-nightly-cu118==0.15.dev0  # TVM prebuilt wheel for CUDA 11.8

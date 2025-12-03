@@ -45,5 +45,11 @@ python analyze_results.py
 
 Edit `config.yaml` to change:
 - Model: `resnet50`
-- Compilers: `pytorch_eager`, `torchscript`
+- Compilers: `pytorch_eager`, `torchscript`, `tvm`
 - Batch sizes: `[1, 32]`
+
+## TVM Support
+
+- TVM is optional but required for the `tvm` compiler entry.
+- Install a prebuilt GPU wheel (e.g., `pip install tlcpack-nightly-cu118`) inside the `ml-benchmark` environment or follow the [official instructions](https://tvm.apache.org/docs/install/index.html).
+- The benchmark automatically targets CUDA when available, otherwise it falls back to LLVM/CPU.

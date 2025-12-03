@@ -13,6 +13,7 @@ model:
 compilers:
   - pytorch_eager      # Baseline (no compilation)
   - torchscript        # TorchScript JIT compiler (works on P100!)
+  - tvm                # TVM Relay / graph executor (needs TVM installed)
 
 output:
   format: csv

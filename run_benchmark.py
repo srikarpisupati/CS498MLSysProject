@@ -6,6 +6,7 @@ from benchmark.models.mobilenet import MobileNetWrapper
 from benchmark.compilers.pytorch_eager import PyTorchEagerCompiler
 from benchmark.compilers.torch_inductor import TorchInductorCompiler
 from benchmark.compilers.torchscript import TorchScriptCompiler
+from benchmark.compilers.tvm_compiler import TVMCompiler
 from benchmark.utils.device import get_device
 from benchmark.utils.output import ResultsWriter
 
@@ -18,8 +19,13 @@ def get_compiler(compiler_name: str):
         return TorchScriptCompiler(method="trace")
     elif compiler_name == "torchscript_script":
         return TorchScriptCompiler(method="script")
+    elif compiler_name == "tvm":
+        return TVMCompiler()
     else:
-        raise ValueError(f"Unknown compiler: {compiler_name}. Available: pytorch_eager, torch_inductor, torchscript")
+        raise ValueError(
+            f"Unknown compiler: {compiler_name}. Available: "
+            "pytorch_eager, torch_inductor, torchscript, tvm"
+        )
 
 def get_model(model_name: str, input_shape):
     if model_name == "resnet50":
