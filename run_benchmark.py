@@ -3,7 +3,7 @@ from benchmark.core.config import Config
 from benchmark.core.benchmark_runner import BenchmarkRunner
 from benchmark.models.resnet import ResNetWrapper
 from benchmark.models.mobilenet import MobileNetWrapper
-from benchmark.models.bert import BertWrapper
+from benchmark.models.vgg import VGGWrapper
 from benchmark.models.gpt2 import Gpt2Wrapper
 from benchmark.compilers.pytorch_eager import PyTorchEagerCompiler
 from benchmark.compilers.torch_inductor import TorchInductorCompiler
@@ -37,16 +37,15 @@ def get_model(model_name: str, input_shape):
         return ResNetWrapper(input_shape=tuple(input_shape), pretrained=True)
     elif model_name == "mobilenet_v3":
         return MobileNetWrapper(input_shape=tuple(input_shape), pretrained=True)
-    elif model_name == "bert_base_uncased":
-        seq_len = input_shape[0] if input_shape else 128
-        return BertWrapper(seq_length=seq_len, pretrained=True)
+    elif model_name == "vgg16":
+        return VGGWrapper(input_shape=tuple(input_shape), pretrained=True)
     elif model_name == "gpt2":
         seq_len = input_shape[0] if input_shape else 128
         return Gpt2Wrapper(seq_length=seq_len, pretrained=True)
     else:
         raise ValueError(
-            "Unknown model: {model_name}. Available: "
-            "resnet50, mobilenet_v3, bert_base_uncased, gpt2"
+            f"Unknown model: {model_name}. Available: "
+            "resnet50, mobilenet_v3, vgg16, gpt2"
         )
 
 def main():

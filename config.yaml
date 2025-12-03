@@ -13,8 +13,8 @@ models:
     input_shape: [3, 224, 224]
     batch_sizes: [1, 32]
     precision: fp32
-  - name: bert_base_uncased
-    input_shape: [128]         # sequence length
+  - name: vgg16
+    input_shape: [3, 224, 224]
     batch_sizes: [1, 32]
     precision: fp32
   - name: gpt2

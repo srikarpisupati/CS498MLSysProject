@@ -1,8 +1,14 @@
 import torch
 import torch.nn as nn
+from contextlib import nullcontext
 from transformers import AutoConfig, AutoModelForCausalLM
 
 from .base import ModelWrapper
+
+try:
+    from torch.backends.cuda import sdp_kernel
+except ImportError:
+    sdp_kernel = None
 
 
 class _Gpt2Module(nn.Module):
@@ -12,8 +18,14 @@ class _Gpt2Module(nn.Module):
         super().__init__()
         self.base_model = base_model
 
+    def _sdp_ctx(self):
+        if sdp_kernel is None or not torch.cuda.is_available():
+            return nullcontext()
+        return sdp_kernel(enable_flash=False, enable_mem_efficient=False, enable_math=True)
+
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
-        outputs = self.base_model(input_ids=input_ids, return_dict=False)
+        with self._sdp_ctx():
+            outputs = self.base_model(input_ids=input_ids, return_dict=False)
         if isinstance(outputs, (tuple, list)):
             return outputs[0]
         return getattr(outputs, "logits", outputs)
