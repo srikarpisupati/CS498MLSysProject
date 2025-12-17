@@ -16,13 +16,6 @@ class BenchmarkRunner:
         self.gpu_monitor = GPUMonitor(device)
     
     def run_benchmark(self, model_wrapper: ModelWrapper, compiler: Compiler, batch_size: int) -> BenchmarkMetrics:
-        """Run a full benchmark pass for one model+compiler+batch.
-
-        Does a compile step, a short warmup, and then measures latency and
-        memory over several iterations. Returns a small dataclass with the
-        aggregated stats so callers can save/compare.
-        """
-
         print(f"\n{'='*60}")
         print(f"Benchmarking: {model_wrapper.get_name()} | {compiler.get_name()} | batch_size={batch_size}")
         print(f"{'='*60}")
@@ -65,13 +58,10 @@ class BenchmarkRunner:
                 if (i + 1) % 25 == 0:
                     print(f"  Progress: {i+1}/{self.measured_iters}")
         
-        # get peak memory after all iterations (we reset before measurement)
         peak_mem_bytes = self.gpu_monitor.get_peak_memory()
-        # avg memory is harder to track accurately without per-iteration sampling
-        # using peak as approximation (memory is usually stable during inference)
         calc_stats = MetricsCollector.compute_metrics(
             latencies=iter_latencies,
-            memory_readings=[peak_mem_bytes],  # single value, both peak and avg will use it
+            memory_readings=[peak_mem_bytes],
             batch_size=batch_size,
             compile_time=compile_time if compiler.get_name() != "pytorch_eager" and compile_time > 0 else None
         )

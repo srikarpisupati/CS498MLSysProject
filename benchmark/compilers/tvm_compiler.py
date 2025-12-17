@@ -9,7 +9,6 @@ from .base import Compiler
 
 
 class TVMCompiler(Compiler):
-    """Compile PyTorch modules to TVM graph executors."""
 
     def __init__(self, target: str | None = None, opt_level: int = 3):
         try:
@@ -43,7 +42,6 @@ class TVMCompiler(Compiler):
         example_cpu = example_input.detach().to("cpu")
 
         traced = torch.jit.trace(model_cpu, example_cpu)
-        # Avoid optimize_for_inference; it can insert MKLDNN-only ops that TVM cannot import.
 
         shape_list = [(self.input_name, tuple(example_cpu.shape))]
         relay_mod, params = self._relay.frontend.from_pytorch(traced, shape_list)
@@ -118,12 +116,10 @@ class TVMCompiler(Compiler):
             sm = f"sm_{device_props.major}{device_props.minor}"
             return sm
         except Exception:
-            # Reasonable default if querying device properties fails.
             return "sm_80"
 
 
 class _TVMCompiledModule(nn.Module):
-    """Small nn.Module wrapper so BenchmarkRunner can call into TVM."""
 
     def __init__(self, graph_module, tvm_module, target: str, tvm_device, input_name: str):
         super().__init__()

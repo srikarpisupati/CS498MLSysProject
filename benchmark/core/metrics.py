@@ -40,12 +40,6 @@ class BenchmarkMetrics:
 class MetricsCollector:
     @staticmethod
     def compute_metrics(latencies: List[float], memory_readings: List[float], batch_size: int, compile_time: float = None) -> dict:
-        """Aggregate raw iteration data into simple summary stats.
-
-        Inputs are per-iteration latency (in seconds) and memory readings (in bytes),
-        plus the batch size used. We compute latency stats in ms, throughput in
-        samples/sec, and memory in MB. compile_time is optional and just passed along.
-        """
         latencies_ms = np.array(latencies) * 1000
         memory_mb = np.array(memory_readings) / (1024 ** 2)
         

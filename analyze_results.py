@@ -3,16 +3,10 @@ import sys
 import os
 
 def analyze_results(csv_path="results/benchmark_results.csv"):
-    """Read a CSV of benchmark runs and present a comprehensive analysis.
-
-    Groups results by model, then shows metrics for each compiler/batch combo.
-    Provides speedup comparisons within each model against pytorch_eager baseline.
-    """
     if not os.path.exists(csv_path):
         print(f"Error: Results file not found at {csv_path}")
         return
     
-    # Read all results grouped by model
     by_model = {}
     all_compilers = set()
     all_batch_sizes = set()
@@ -20,7 +14,7 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if not row.get('compiler'):  # Skip empty rows
+            if not row.get('compiler'):
                 continue
                 
             model = row['model']
@@ -62,7 +56,6 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
         print("="*80)
         print()
         
-        # Show all metrics for each compiler/batch combination
         for compiler in compilers:
             compiler_has_data = any((compiler, bs) in results for bs in batch_sizes)
             if not compiler_has_data:
@@ -91,7 +84,6 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
                     print(f"      Compile Time:         N/A")
                 print()
         
-        # Compare against pytorch_eager baseline for this model
         eager_compiler = 'pytorch_eager'
         other_compilers = [c for c in compilers if c != eager_compiler]
         
@@ -129,7 +121,6 @@ def analyze_results(csv_path="results/benchmark_results.csv"):
     print("="*80)
     print()
     
-    # Create summary table with all models/compilers
     print(f"{'Model':<20} {'Compiler':<25} {'Batch':<6} {'Latency(ms)':<12} {'Throughput':<15} {'Memory(MB)':<12} {'Compile(s)':<12}")
     print("-" * 110)
     

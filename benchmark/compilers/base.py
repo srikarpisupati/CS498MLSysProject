@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 
 class Compiler(ABC):
-    # basic interface all compilers follow
     
     @abstractmethod
     def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:

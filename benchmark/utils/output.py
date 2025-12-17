@@ -21,7 +21,6 @@ class ResultsWriter:
         mode = 'a' if append else 'w'
         with open(output_path, mode, newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
-            # Write header only if file is new or we're overwriting
             if not append or not file_exists:
                 writer.writeheader()
             for result in results:

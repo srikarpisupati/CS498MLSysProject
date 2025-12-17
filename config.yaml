@@ -1,8 +1,6 @@
-# Configuration for ML Compiler Benchmark
-
 benchmark:
-  warmup_iterations: 10      # Iterations to skip (GPU warmup, JIT compilation)
-  measured_iterations: 100   # Iterations to measure and report
+  warmup_iterations: 10
+  measured_iterations: 100
 
 models:
   - name: resnet50
@@ -18,15 +16,15 @@ models:
     batch_sizes: [1, 8]
     precision: fp32
   - name: gpt2
-    input_shape: [128]         # sequence length for causal LM
+    input_shape: [128]
     batch_sizes: [1, 8]
     precision: fp32
 
 compilers:
-  - pytorch_eager      # Baseline (no compilation)
-  - torchscript        # TorchScript JIT compiler
-  - onnxruntime        # ONNX Runtime (CUDA EP)
-  - tvm                # TVM Relay / graph executor (needs TVM installed)
+  - pytorch_eager
+  - torchscript
+  - onnxruntime
+  - tvm
 
 output:
   format: csv

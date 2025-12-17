@@ -12,7 +12,6 @@ except ImportError:
 
 
 class _Gpt2Module(nn.Module):
-    """Wrap GPT-2 so we always return logits tensor compatible with benchmarks."""
 
     def __init__(self, base_model: nn.Module):
         super().__init__()
@@ -32,7 +31,6 @@ class _Gpt2Module(nn.Module):
 
 
 class Gpt2Wrapper(ModelWrapper):
-    """Model wrapper for GPT-2 causal LM."""
 
     def __init__(self, seq_length: int = 128, pretrained: bool = True):
         config = AutoConfig.from_pretrained("gpt2")

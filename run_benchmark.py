@@ -50,12 +50,6 @@ def get_model(model_name: str, input_shape):
         )
 
 def main():
-    """Entry point that loads config, runs all requested cases, and saves CSV.
-
-    Processes each model separately with memory clearing between models.
-    Results are appended incrementally to avoid memory issues and ensure
-    partial results are saved if a run fails.
-    """
     cfg = Config.from_yaml("config.yaml")
     
     print("="*70)
@@ -77,12 +71,10 @@ def main():
     
     output_path = f"{cfg.output.save_path}/benchmark_results.csv"
     
-    # Clear existing results file at start
     if os.path.exists(output_path):
         os.remove(output_path)
         print(f"Cleared previous results at: {output_path}\n")
     
-    # Process each model separately to manage memory
     for model_idx, model_cfg in enumerate(cfg.models):
         print(f"\n{'='*70}")
         print(f"PROCESSING MODEL {model_idx + 1}/{len(cfg.models)}: {model_cfg.name}")
@@ -102,11 +94,9 @@ def main():
                     print(f"\n⚠ Error benchmarking {model_cfg.name} with {compiler_name} (batch={batch_size}): {e}")
                     print("Continuing with next configuration...\n")
         
-        # Save results for this model (append mode after first model)
         if model_results:
             ResultsWriter.write_csv(model_results, output_path, append=(model_idx > 0))
         
-        # Clean up model and free memory before next model
         del model_wrapper
         if device.type == 'cuda':
             torch.cuda.empty_cache()

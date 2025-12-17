@@ -1,20 +1,15 @@
 #!/bin/bash
-# Script to diagnose and automatically fix GPU access issues
-
-# Don't use set -e for diagnostic script - we want to continue even if checks fail
 
 echo "======================================================================"
 echo "GPU Fix Diagnostic and Auto-Fix Script"
 echo "======================================================================"
 echo ""
 
-# Initialize variables
 DRIVER_LOADED=false
 DRIVER_INSTALLED=false
 NOUVEAU_LOADED=false
 FIXES_APPLIED=false
 
-# Check if GPU hardware is present
 echo "1. Checking GPU hardware..."
 if lspci 2>/dev/null | grep -qi nvidia; then
     echo "   ✓ GPU hardware detected:"
@@ -27,7 +22,6 @@ else
 fi
 echo ""
 
-# Check if NVIDIA driver kernel module is loaded
 echo "2. Checking NVIDIA driver kernel module..."
 if [ -f /proc/driver/nvidia/version ]; then
     echo "   ✓ NVIDIA driver kernel module is loaded:"
@@ -39,7 +33,6 @@ else
 fi
 echo ""
 
-# Check if driver is installed (even if not loaded)
 if dpkg -l 2>/dev/null | grep -q "nvidia-driver-[0-9]"; then
     DRIVER_INSTALLED=true
     echo "   ✓ NVIDIA driver package is installed"
@@ -49,7 +42,6 @@ else
 fi
 echo ""
 
-# Check for nouveau
 echo "3. Checking for nouveau driver..."
 if lsmod | grep -q "^nouveau"; then
     echo "   ⚠ nouveau driver is loaded (will interfere with NVIDIA driver)"
@@ -60,7 +52,6 @@ else
 fi
 echo ""
 
-# Check for nvidia-smi
 echo "4. Checking nvidia-smi availability..."
 if command -v nvidia-smi &> /dev/null; then
     echo "   ✓ nvidia-smi is available"
@@ -78,7 +69,6 @@ else
 fi
 echo ""
 
-# Check for module system (common on clusters)
 echo "5. Checking for module system (common on HPC clusters)..."
 if command -v module &> /dev/null; then
     echo "   ✓ Module system detected"
@@ -98,16 +88,13 @@ else
 fi
 echo ""
 
-# Check conda environment CUDA
 echo "6. Checking conda environment CUDA setup..."
 PYTHON_FOUND=false
 
-# Check if we're in a conda environment
 if [ -n "$CONDA_PREFIX" ] && [ -f "$CONDA_PREFIX/bin/python" ]; then
     PYTHON_CMD="$CONDA_PREFIX/bin/python"
     echo "   ✓ Found conda environment: $CONDA_PREFIX"
     PYTHON_FOUND=true
-# Check common conda locations
 elif [ -f ~/miniconda3/envs/ml-benchmark/bin/python ]; then
     PYTHON_CMD=~/miniconda3/envs/ml-benchmark/bin/python
     PYTHON_FOUND=true
@@ -145,7 +132,6 @@ else
 fi
 echo ""
 
-# Check device permissions
 echo "7. Checking GPU device permissions..."
 if ls /dev/nvidia* 2>/dev/null | head -1 > /dev/null; then
     echo "   ✓ GPU devices found:"
@@ -166,7 +152,6 @@ else
 fi
 echo ""
 
-# Determine if fixes are needed
 NEEDS_FIX=false
 
 if [ "$DRIVER_LOADED" = false ]; then
@@ -177,14 +162,12 @@ if [ "$NOUVEAU_LOADED" = true ]; then
     NEEDS_FIX=true
 fi
 
-# Auto-fix section
 if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
     echo "======================================================================"
     echo "AUTO-FIXING GPU ISSUES"
     echo "======================================================================"
     echo ""
     
-    # Check sudo access
     if ! sudo -n true 2>/dev/null; then
         echo "⚠️  This script needs sudo access to fix GPU issues."
         echo "   Please run with sudo or ensure passwordless sudo is configured."
@@ -194,12 +177,10 @@ if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
         exit 1
     fi
     
-    # Step 1: Install driver if not installed
     if [ "$DRIVER_INSTALLED" = false ]; then
         echo "📦 Step 1: Installing NVIDIA driver..."
         echo "   This may take several minutes..."
         sudo apt update -qq
-        # Try to install recommended driver version
         if apt-cache policy nvidia-driver-535 &>/dev/null; then
             echo "   Installing nvidia-driver-535..."
             sudo apt install -y nvidia-driver-535 nvidia-utils-535 2>&1 | grep -E "(Setting up|Unpacking|Installing)" || true
@@ -222,7 +203,6 @@ if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
         echo ""
     fi
     
-    # Step 2: Blacklist nouveau
     if [ ! -f /etc/modprobe.d/blacklist-nouveau.conf ] || ! grep -q "blacklist nouveau" /etc/modprobe.d/blacklist-nouveau.conf 2>/dev/null; then
         echo "🔒 Step 2: Blacklisting nouveau driver..."
         echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf > /dev/null
@@ -236,18 +216,14 @@ if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
         echo ""
     fi
     
-    # Step 3: Unload nouveau if loaded
     if [ "$NOUVEAU_LOADED" = true ]; then
         echo "🔄 Step 3: Unloading nouveau driver..."
-        # Try to unload nouveau (may fail if in use, that's okay)
         sudo rmmod nouveau 2>/dev/null || true
-        # Also try to unload dependencies
         sudo rmmod drm_kms_helper i2c_algo_bit drm 2>/dev/null || true
         echo "   ✓ Attempted to unload nouveau"
         echo ""
     fi
     
-    # Step 4: Load NVIDIA modules
     if [ "$DRIVER_INSTALLED" = true ] && [ "$DRIVER_LOADED" = false ]; then
         echo "⚙️  Step 4: Loading NVIDIA kernel modules..."
         sudo modprobe nvidia 2>&1 || echo "   ⚠ Could not load nvidia module (may need reboot)"
@@ -264,7 +240,6 @@ if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
         echo ""
     fi
     
-    # Step 5: Verify nvidia-smi
     if [ "$DRIVER_LOADED" = true ]; then
         echo "✅ Step 5: Verifying GPU access..."
         if command -v nvidia-smi &>/dev/null; then
@@ -296,13 +271,11 @@ if [ "$NEEDS_FIX" = true ] && [ "$HAS_MODULE_SYSTEM" = false ]; then
     fi
 fi
 
-# Final verification
 echo "======================================================================"
 echo "FINAL VERIFICATION"
 echo "======================================================================"
 echo ""
 
-# Check driver status
 if [ -f /proc/driver/nvidia/version ]; then
     echo "✓ NVIDIA driver is loaded"
     cat /proc/driver/nvidia/version | head -1
@@ -317,7 +290,6 @@ else
 fi
 echo ""
 
-# Check nvidia-smi
 if command -v nvidia-smi &>/dev/null; then
     if nvidia-smi &>/dev/null; then
         echo "✓ nvidia-smi works correctly"
@@ -332,7 +304,6 @@ else
 fi
 echo ""
 
-# Test PyTorch if available
 if [ "$PYTHON_FOUND" = true ]; then
     echo "Testing PyTorch GPU access..."
     if $PYTHON_CMD -c "import torch" 2>/dev/null; then

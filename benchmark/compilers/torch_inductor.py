@@ -5,7 +5,6 @@ from .base import Compiler
 class TorchInductorCompiler(Compiler):
     def __init__(self, mode="default"):
         self.mode = mode
-        # triton only works on newer gpu
         self._supports_triton = self._check_triton_support()
     
     def _check_triton_support(self) -> bool:
@@ -14,7 +13,7 @@ class TorchInductorCompiler(Compiler):
         try:
             device_props = torch.cuda.get_device_properties(0)
             compute_capability = device_props.major * 10 + device_props.minor
-            return compute_capability >= 70  # 7.0
+            return compute_capability >= 70
         except (RuntimeError, AttributeError):
             return False
     

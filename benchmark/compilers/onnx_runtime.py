@@ -9,7 +9,6 @@ from .base import Compiler
 
 
 class OnnxRuntimeCompiler(Compiler):
-    """Compile PyTorch modules to ONNX and execute with ONNX Runtime."""
 
     def __init__(
         self,
@@ -17,7 +16,7 @@ class OnnxRuntimeCompiler(Compiler):
         opset_version: int = 17,
     ):
         try:
-            import onnxruntime as ort  # noqa: F401
+            import onnxruntime as ort
         except ImportError as exc:
             raise RuntimeError(
                 "onnxruntime-gpu is not installed. Please install it via the "
@@ -83,7 +82,6 @@ class OnnxRuntimeCompiler(Compiler):
 
 
 class _OnnxRuntimeModule(nn.Module):
-    """Wrapper so BenchmarkRunner can call into ONNX Runtime sessions."""
 
     def __init__(self, session, input_name: str, output_names: List[str]):
         super().__init__()

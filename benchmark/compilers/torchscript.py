@@ -7,16 +7,9 @@ class TorchScriptCompiler(Compiler):
         self.method = method
     
     def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:
-        """Produce a TorchScript module via trace or script for inference.
-
-        We default to trace (fast, assumes input shapes/paths are stable).
-        Script is slower but can handle more dynamic Python. Both paths
-        run optimize_for_inference before returning.
-        """
         model.eval()
         
         if self.method == "trace":
-            # Disable trace checking to avoid OOM during verification with large models
             traced_model = torch.jit.trace(model, example_input, check_trace=False)
             traced_model = torch.jit.optimize_for_inference(traced_model)
             return traced_model
