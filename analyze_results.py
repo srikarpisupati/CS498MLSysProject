@@ -4,7 +4,7 @@ import os
 
 def analyze_results(csv_path="results/benchmark_results.csv"):
     if not os.path.exists(csv_path):
-        print(f"Error: Results file not found at {csv_path}")
+        print(f"Error: Results file not found")
         return
     
     by_model = {}

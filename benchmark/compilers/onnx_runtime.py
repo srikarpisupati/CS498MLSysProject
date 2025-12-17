@@ -18,11 +18,7 @@ class OnnxRuntimeCompiler(Compiler):
         try:
             import onnxruntime as ort
         except ImportError as exc:
-            raise RuntimeError(
-                "onnxruntime-gpu is not installed. Please install it via the "
-                "environment.yml (pip dependency) or run "
-                "`pip install onnxruntime-gpu==1.15.1` inside the ml-benchmark environment."
-            ) from exc
+            raise RuntimeError("onnxruntime-gpu is not installed") from exc
 
         self.providers = providers
         self.opset_version = opset_version

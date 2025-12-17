@@ -28,10 +28,7 @@ def get_compiler(compiler_name: str):
     elif compiler_name == "tvm":
         return TVMCompiler()
     else:
-        raise ValueError(
-            f"Unknown compiler: {compiler_name}. Available: "
-            "pytorch_eager, torch_inductor, torchscript, onnxruntime, tvm"
-        )
+        raise ValueError(f"Unknown compiler: {compiler_name}")
 
 def get_model(model_name: str, input_shape):
     if model_name == "resnet50":
@@ -44,10 +41,7 @@ def get_model(model_name: str, input_shape):
         seq_len = input_shape[0] if input_shape else 128
         return Gpt2Wrapper(seq_length=seq_len, pretrained=True)
     else:
-        raise ValueError(
-            f"Unknown model: {model_name}. Available: "
-            "resnet50, mobilenet_v3, vgg16, gpt2"
-        )
+        raise ValueError(f"Unknown model: {model_name}")
 
 def main():
     cfg = Config.from_yaml("config.yaml")

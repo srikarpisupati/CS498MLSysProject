@@ -16,11 +16,7 @@ class TVMCompiler(Compiler):
             from tvm import relay
             from tvm.contrib import graph_executor
         except ImportError as exc:
-            raise RuntimeError(
-                "TVM is not installed. Install the bundled "
-                "'tlcpack_cu116-0.11.1-*.whl' (in the repo root) or download a CUDA-enabled "
-                "TLCPack release per https://tvm.apache.org/docs/install/index.html"
-            ) from exc
+            raise RuntimeError("TVM is not installed") from exc
 
         self._tvm = tvm
         self._relay = relay
@@ -69,9 +65,7 @@ class TVMCompiler(Compiler):
     def _get_tvm_device(self):
         if "cuda" in self.target:
             if not self._tvm.runtime.enabled("cuda"):
-                raise RuntimeError(
-                    "TVM was not built with CUDA support but 'cuda' target was requested."
-                )
+                raise RuntimeError("TVM was not built with CUDA support")
             return self._tvm.cuda(0)
         return self._tvm.cpu(0)
 

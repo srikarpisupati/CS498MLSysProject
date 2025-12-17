@@ -36,7 +36,7 @@ class Config:
         elif 'model' in data:
             model_entries = [data['model']]
         else:
-            raise ValueError("Config must specify either 'model' or 'models'.")
+            raise ValueError("Config must specify 'model' or 'models'")
         
         model_configs = [ModelConfig(**entry) for entry in model_entries]
         

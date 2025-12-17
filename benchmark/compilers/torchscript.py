@@ -20,7 +20,7 @@ class TorchScriptCompiler(Compiler):
             return scripted_model
         
         else:
-            raise ValueError(f"Unknown method: {self.method}. Use 'trace' or 'script'")
+            raise ValueError(f"Unknown method: {self.method}")
     
     def get_name(self) -> str:
         return f"torchscript_{self.method}"

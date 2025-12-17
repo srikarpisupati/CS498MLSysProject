@@ -49,7 +49,7 @@ echo "Accepting conda Terms of Service..."
 cd "$PROJECT_DIR"
 
 if [ ! -f "environment.yml" ]; then
-    echo "Error: environment.yml not found in $PROJECT_DIR"
+    echo "Error: environment.yml not found"
     exit 1
 fi
 
@@ -107,7 +107,7 @@ if conda env list | grep -q "^$ENV_NAME "; then
     echo "  source ~/.bashrc"
     echo ""
 else
-    echo "Error: Environment '$ENV_NAME' was not created successfully"
+    echo "Error: Environment was not created"
     exit 1
 fi
 
