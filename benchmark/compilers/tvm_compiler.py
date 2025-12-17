@@ -32,7 +32,7 @@ class TVMCompiler(Compiler):
         self.opt_level = opt_level
         self.input_name = "input0"
 
-    def compile(self, model: nn.Module, example_input: torch.Tensor) -> nn.Module:
+    def compile(self, model, example_input):
         model.eval()
         model_cpu = model.to("cpu")
         example_cpu = example_input.detach().to("cpu")
@@ -104,7 +104,7 @@ class TVMCompiler(Compiler):
 
         return target_str, self._tvm.target.Target(target_str)
 
-    def _detect_cuda_arch(self) -> str:
+    def _detect_cuda_arch(self):
         try:
             device_props = torch.cuda.get_device_properties(0)
             sm = f"sm_{device_props.major}{device_props.minor}"
@@ -144,7 +144,7 @@ class _TVMCompiledModule(nn.Module):
         numpy_array = tensor.detach().cpu().numpy()
         return self._tvm.nd.array(numpy_array, device=self.tvm_device)
 
-    def _to_torch_tensor(self, tvm_output, desired_device: torch.device) -> torch.Tensor:
+    def _to_torch_tensor(self, tvm_output, desired_device):
         if self.uses_cuda:
             torch_tensor = dlpack.from_dlpack(tvm_output.to_dlpack())
             return torch_tensor.to(desired_device)

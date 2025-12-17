@@ -44,10 +44,10 @@ class Gpt2Wrapper(ModelWrapper):
         self.seq_length = seq_length
         self.vocab_size = config.vocab_size
 
-    def get_model(self) -> nn.Module:
+    def get_model(self):
         return self.model
 
-    def get_example_input(self, batch_size: int, device: torch.device) -> torch.Tensor:
+    def get_example_input(self, batch_size, device):
         return torch.randint(
             0,
             self.vocab_size,

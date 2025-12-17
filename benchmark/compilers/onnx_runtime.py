@@ -1,6 +1,6 @@
 import os
 import tempfile
-from typing import List, Optional
+from typing import List
 
 import torch
 import torch.nn as nn
@@ -10,11 +10,7 @@ from .base import Compiler
 
 class OnnxRuntimeCompiler(Compiler):
 
-    def __init__(
-        self,
-        providers: Optional[List[str]] = None,
-        opset_version: int = 17,
-    ):
+    def __init__(self, providers=None, opset_version: int = 17):
         try:
             import onnxruntime as ort
         except ImportError as exc:
@@ -73,13 +69,13 @@ class OnnxRuntimeCompiler(Compiler):
     def get_name(self) -> str:
         return "onnxruntime"
 
-    def supports_dynamic_shapes(self) -> bool:
+    def supports_dynamic_shapes(self):
         return True
 
 
 class _OnnxRuntimeModule(nn.Module):
 
-    def __init__(self, session, input_name: str, output_names: List[str]):
+    def __init__(self, session, input_name, output_names):
         super().__init__()
         self.session = session
         self.input_name = input_name
@@ -88,8 +84,10 @@ class _OnnxRuntimeModule(nn.Module):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         input_np = inputs.detach().cpu().numpy()
         ort_inputs = {self.input_name: input_np}
+
         outputs = self.session.run(self.output_names, ort_inputs)
         torch_outputs = [torch.from_numpy(arr) for arr in outputs]
+        
         if len(torch_outputs) == 1:
             return torch_outputs[0].to(inputs.device)
         return tuple(output.to(inputs.device) for output in torch_outputs)

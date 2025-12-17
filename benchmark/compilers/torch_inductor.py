@@ -7,7 +7,7 @@ class TorchInductorCompiler(Compiler):
         self.mode = mode
         self._supports_triton = self._check_triton_support()
     
-    def _check_triton_support(self) -> bool:
+    def _check_triton_support(self):
         if not torch.cuda.is_available():
             return False
         try:

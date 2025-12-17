@@ -30,7 +30,7 @@ def get_compiler(compiler_name: str):
     else:
         raise ValueError(f"Unknown compiler: {compiler_name}")
 
-def get_model(model_name: str, input_shape):
+def get_model(model_name, input_shape):
     if model_name == "resnet50":
         return ResNetWrapper(input_shape=tuple(input_shape), pretrained=True)
     elif model_name == "mobilenet_v3":
@@ -85,7 +85,7 @@ def main():
                     run_stats = runner.run_benchmark(model_wrapper, compiler, batch_size)
                     model_results.append(run_stats)
                 except Exception as e:
-                    print(f"\n⚠ Error benchmarking {model_cfg.name} with {compiler_name} (batch={batch_size}): {e}")
+                    print(f"\nERROR: Benchmarking {model_cfg.name} with {compiler_name} (batch={batch_size}): {e}")
                     print("Continuing with next configuration...\n")
         
         if model_results:

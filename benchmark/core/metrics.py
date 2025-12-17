@@ -39,7 +39,7 @@ class BenchmarkMetrics:
 
 class MetricsCollector:
     @staticmethod
-    def compute_metrics(latencies: List[float], memory_readings: List[float], batch_size: int, compile_time: float = None) -> dict:
+    def compute_metrics(latencies, memory_readings, batch_size: int, compile_time=None):
         latencies_ms = np.array(latencies) * 1000
         memory_mb = np.array(memory_readings) / (1024 ** 2)
         

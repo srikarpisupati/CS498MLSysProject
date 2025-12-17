@@ -10,5 +10,5 @@ class PyTorchEagerCompiler(Compiler):
     def get_name(self) -> str:
         return "pytorch_eager"
     
-    def supports_dynamic_shapes(self) -> bool:
+    def supports_dynamic_shapes(self):
         return True

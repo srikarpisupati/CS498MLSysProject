@@ -7,24 +7,24 @@ echo ""
 
 if [ -f ~/.bashrc ]; then
     source ~/.bashrc
-    echo "✓ Sourced ~/.bashrc"
+    echo "Sourced ~/.bashrc"
 else
-    echo "⚠ ~/.bashrc not found"
+    echo "WARNING: ~/.bashrc not found"
 fi
 
 export PATH="$HOME/miniconda3/bin:$PATH"
 
 if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
     source "$HOME/miniconda3/etc/profile.d/conda.sh"
-    echo "✓ Initialized conda"
+    echo "Initialized conda"
 fi
 
 if conda env list | grep -q "ml-benchmark"; then
     conda activate ml-benchmark
-    echo "✓ Activated conda environment: ml-benchmark"
+    echo "Activated conda environment: ml-benchmark"
 else
-    echo "⚠ ml-benchmark environment not found"
-    echo "  Run ./setup.sh to create it"
+    echo "WARNING: ml-benchmark environment not found"
+    echo "  Run ./setup.sh"
     exit 1
 fi
 
@@ -33,7 +33,7 @@ ENV_PYTHON="$HOME/miniconda3/envs/ml-benchmark/bin/python"
 echo ""
 echo "Environment Check:"
 echo "  Python: $($ENV_PYTHON --version 2>&1)"
-$ENV_PYTHON -c "import torch; print('  PyTorch:', torch.__version__); print('  CUDA available:', torch.cuda.is_available())" 2>/dev/null || echo "  ⚠ PyTorch not available"
+$ENV_PYTHON -c "import torch; print('  PyTorch:', torch.__version__); print('  CUDA available:', torch.cuda.is_available())" 2>/dev/null || echo "  WARNING: PyTorch not available"
 
 echo ""
 echo "GPU Status:"

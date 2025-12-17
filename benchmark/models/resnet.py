@@ -17,7 +17,7 @@ class ResNetWrapper(ModelWrapper):
     def get_model(self) -> nn.Module:
         return self.model
     
-    def get_example_input(self, batch_size: int, device: torch.device) -> torch.Tensor:
+    def get_example_input(self, batch_size, device):
         return torch.randn(batch_size, *self.input_shape, device=device)
     
     def get_name(self) -> str:

@@ -1,7 +1,6 @@
 import time
 import torch
 import torch.nn as nn
-from typing import List
 from ..compilers.base import Compiler
 from ..models.base import ModelWrapper
 from ..utils.device import GPUMonitor
@@ -15,7 +14,7 @@ class BenchmarkRunner:
         self.measured_iters = measured_iters
         self.gpu_monitor = GPUMonitor(device)
     
-    def run_benchmark(self, model_wrapper: ModelWrapper, compiler: Compiler, batch_size: int) -> BenchmarkMetrics:
+    def run_benchmark(self, model_wrapper, compiler, batch_size):
         print(f"\n{'='*60}")
         print(f"Benchmarking: {model_wrapper.get_name()} | {compiler.get_name()} | batch_size={batch_size}")
         print(f"{'='*60}")

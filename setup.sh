@@ -72,8 +72,8 @@ if [ -f "$TVM_WHEEL" ]; then
     "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/pip" install "$TVM_WHEEL"
 else
     echo ""
-    echo "⚠ TVM wheel not found at $TVM_WHEEL"
-    echo "  Download a CUDA-enabled TLCPack wheel and place it in the project root before running setup."
+    echo "WARNING: TVM wheel not found"
+    echo "  Place tlcpack wheel in project root"
 fi
 
 if conda env list | grep -q "^$ENV_NAME "; then
@@ -86,25 +86,16 @@ if conda env list | grep -q "^$ENV_NAME "; then
     if "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/nvcc" --version >/dev/null 2>&1; then
         "$CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/nvcc" --version | head -n 1
     else
-        echo "  ⚠ nvcc not found. Ensure cuda-toolkit installed correctly."
+        echo "  WARNING: nvcc not found. Reinstall cuda-toolkit"
     fi
     
     echo ""
     echo "======================================================================"
-    echo "✓ Setup complete!"
+    echo "Setup complete!"
     echo "======================================================================"
     echo ""
-    echo "To activate the environment, run:"
-    echo "  conda activate $ENV_NAME"
-    echo ""
-    echo "Or to run the benchmark directly:"
-    echo "  $CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/python $PROJECT_DIR/run_benchmark.py"
-    echo ""
-    echo "To check GPU status:"
-    echo "  $CONDA_INSTALL_DIR/envs/$ENV_NAME/bin/python $PROJECT_DIR/check_gpu.py"
-    echo ""
-    echo "To use conda in new terminal sessions, reload your shell or run:"
-    echo "  source ~/.bashrc"
+    echo "Activate: conda activate $ENV_NAME"
+    echo "Run: python run_benchmark.py"
     echo ""
 else
     echo "Error: Environment was not created"

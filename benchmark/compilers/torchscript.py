@@ -22,10 +22,10 @@ class TorchScriptCompiler(Compiler):
         else:
             raise ValueError(f"Unknown method: {self.method}")
     
-    def get_name(self) -> str:
+    def get_name(self):
         return f"torchscript_{self.method}"
     
-    def supports_dynamic_shapes(self) -> bool:
+    def supports_dynamic_shapes(self):
         return False
 
 
